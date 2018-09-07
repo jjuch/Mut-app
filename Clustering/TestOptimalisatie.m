@@ -3,11 +3,12 @@ close all;
 clc;
 %% Generate random set of users (size m) with n question answers
 
-m=50; % Aantal Gebruikers %length(G.Name);
+m=100; % Aantal Gebruikers %length(G.Name);
 k=5; % Aantal parameters
 n=4;    % Aantal subgroepen
+global G M;
 G=Gebruiker;
-for i=1:8
+for i=1:m
     G.Name{i}=genvarname(strcat('G',num2str(i)));
     G.Specs{i}=rand(1,k);
 end % for
@@ -27,8 +28,33 @@ G.Clus{2} %Cluster number (highest value)
 % vragen. Een kleine variatie wordt toegelaten op hoofmatrix (dynamisch)
 % met optimalisatie i.e. PSO
 
-ar=GiveClusters(G)
-lb=-1*ones(k,n);
-ub=1*ones(k,n);
-%fun = @(x) 
-x=particleswarm(@ObjectiveFunction,nvars,lb,ub);
+% Before PSO
+G.Clus=Cluster(G,M);
+Clusters=GiveClusters(G);
+bins=zeros(1,4);
+%Count the number of people in every bin
+for i=1:length(Clusters)
+    bins(Clusters(i))=bins(Clusters(i))+1;
+end %for i
+bins
+std(bins)
+
+%ar=GiveClusters(G)
+lb=-0.1*ones(k,n);
+ub=0.1*ones(k,n);
+ 
+[x,minstd]=particleswarm(@ObjectiveFunction,k*n,lb,ub);
+
+
+%After PSO
+M_add=vec2mat(x,4);
+M_new=M+M_add;
+G.Clus=Cluster(G,M_new);
+Clusters=GiveClusters(G);
+bins=zeros(1,4);
+%Count the number of people in every bin
+for i=1:length(Clusters)
+    bins(Clusters(i))=bins(Clusters(i))+1;
+end %for i
+bins
+minstd
